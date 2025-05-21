@@ -1,0 +1,9 @@
+ dronekit-sitl copter --home=23.782,90.407,10,0 --out=tcp:127.0.0.1:5760
+ dronekit-sitl copter --home=23.782,90.407,10,0 --out=tcp:127.0.0.1:5760
+
+ make sure your python version is Python 3.6.8
+
+ pip install --upgrade dronekit-sitl
+pip install dronekit==2.9.2 pymavlink==2.4.8
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+pip install dronekit==2.9.2 pymavlink==2.4.8

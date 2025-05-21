@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Drone Takeoff Control - Status Table</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: white;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #0a3d62;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            font-size: 2rem;
+        }
+        form {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        button#takeoff-btn {
+            background-color: #0984e3;
+            color: white;
+            border: none;
+            padding: 0.75rem 2.5rem;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 12px rgba(9,132,227,0.5);
+        }
+        button#takeoff-btn:hover:not(:disabled) {
+            background-color: #74b9ff;
+            box-shadow: 0 6px 18px rgba(116,185,255,0.7);
+        }
+        button#takeoff-btn:disabled {
+            background-color: #b2bec3;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        thead {
+            background-color: #0984e3;
+            color: white;
+        }
+        thead th {
+            padding: 12px 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f1f3f6;
+        }
+        tbody tr:hover {
+            background-color: #dfe6e9;
+        }
+        tbody td {
+            padding: 12px 15px;
+            font-size: 1rem;
+            color: #2d3436;
+        }
+        /* Responsive: small screens */
+        @media (max-width: 480px) {
+            body {
+                padding: 1rem;
+            }
+            .container {
+                padding: 1rem 1.5rem;
+            }
+            thead th, tbody td {
+                padding: 10px 8px;
+                font-size: 0.9rem;
+            }
+            button#takeoff-btn {
+                width: 100%;
+                font-size: 1rem;
+                padding: 0.75rem;
+            }
+        }
+    </style>
+
+    <script>
+        // প্রতি ২ সেকেন্ডে স্ট্যাটাস আপডেট করার AJAX
+        function refreshStatus() {
+            fetch(window.location.href)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newTableBody = doc.querySelector('#status-table tbody');
+                    if (newTableBody) {
+                        document.querySelector('#status-table tbody').innerHTML = newTableBody.innerHTML;
+                    }
+
+                    const inProgress = doc.getElementById('in-progress').value;
+                    const btn = document.getElementById('takeoff-btn');
+                    btn.disabled = (inProgress === 'True');
+                    btn.innerText = inProgress === 'True' ? 'Takeoff in Progress...' : 'Start Takeoff';
+                })
+                .catch(err => console.error('Status refresh failed:', err));
+        }
+        setInterval(refreshStatus, 2000);
+        window.onload = refreshStatus;
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Drone Takeoff Control</h1>
+        <form method="get">
+            <button type="submit" name="takeoff" value="1" id="takeoff-btn">Start Takeoff</button>
+        </form>
+
+        <input type="hidden" id="in-progress" value="{{ in_progress }}">
+
+        {% if status_log %}
+<table id="status-table" aria-label="Drone status information">
+    <thead>
+        <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for key, val in status_log %}
+        <tr>
+            <td>{% if key %}{{ key }}{% else %}—{% endif %}</td>
+            <td>{{ val }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="text-align:center; color:#636e72; font-style:italic;">No status yet.</p>
+{% endif %}
+
+    </div>
+</body>
+</html>
